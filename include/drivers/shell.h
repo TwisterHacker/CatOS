@@ -1,8 +1,8 @@
 #ifndef SHELL_H_
 #define SHELL_H_
 
-unsigned char getch();
+extern unsigned char getch();
+extern void getcom();
 
-char* input();
 
 #endif

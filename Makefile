@@ -1,12 +1,13 @@
 	OBJECTS = obj/loader.o 						 \
 			  obj/main.o 						 \
+			  obj/memory/malloc.o 						 \
 			  obj/common/common.o				 \
 			  obj/interrupts/descriptor_tables.o \
 			  obj/interrupts/interrupts.o \
 			  obj/interrupts/descriptors.o \
 			  obj/interrupts/isr.o \
 			  obj/drivers/keyboard.o \
-			  obj/drivers/shell.o \
+			  obj/drivers/terminal.o \
 
 	#as objects
 
@@ -52,7 +53,6 @@ kernel.iso: $(OBJECTS)
 	mkdir iso/boot/grub
 
 	cp kernel.elf iso/boot
-	cp 1.jpg iso/boot/
 	cp grub.cfg iso/boot/grub/
 	clear
 

@@ -1,6 +1,7 @@
 // common.c -- Defines some global functions
 
 #include <common.h>
+void printf();
 
 // write a byte out to the specified port
 void outb(u16int port, u8int value)
@@ -75,4 +76,13 @@ char *strcat(char *dest, const char *src)
 	while((*dest++ = *src++) != '\0');
 
 	return tmp;
+}
+
+short strncmp(char *str1, char *str2, uint8_t n){
+	for(uint8_t i; i<n; i++){
+		if(str1[i] != str2[i]){
+			return 0;
+		}
+	}
+	return 1;
 }
