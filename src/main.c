@@ -1,146 +1,128 @@
 #include <common.h>
 #include <interrupts/descriptor_tables.h>
 #include <drivers/keyboard.h>
+#include <drivers/timer.h>
 #include <drivers/terminal.h>
+#include <memory/memory_managment.h>
+#include <drivers/shell.h>
+#include <drivers/fs.h>
+#include <fs/fat12.h>
 
-void cls();
-void update_cursor();
-void clear_buffer();
-void scroll_screen();
+/////// Virtual File System ///////
 
-int x = 0;
-int y = 0;
+extern void init_devices();
+extern int unmount_device();
+extern void list_directory();
+
+///////////////////////////////////
+
+////// FAT_12 //////
+
+extern void detect_floppy_drives();
+extern void floppy_reset();
+extern void floppy_specify();
+extern void floppy_calibrate();
+extern void fdc_init();
+extern int floppy_read_track();
+extern int floppy_write_track();
+
+extern void fat12_parse_boot_sector();
+extern void fat12_load_root_dir();
+extern void fat12_list_root_dir();
+extern void fat12_load_fat();
+extern int floppy_open_file();
+extern int floppy_close_file();
+extern int floppy_write_file();
+extern int floppy_list();
+extern int floppy_load_dir();
+extern int floppy_create_entry();
+extern int floppy_remove_entry();
+
+extern uint8_t* file_buf;
+extern uint32_t file_size;
+
+extern short flp_a;
+extern short flp_b;
+
+///////////////////
 
 
-extern short shell_mode;
-extern void input();
-extern void read_command(char* command);
 
-void scroll_screen() {
-	static uint16_t* VideoMem = (uint16_t*)0xb8000;
-    for (int y = 1; y < 24; y++) {
-        for (int x = 0; x < 80; x++) {
-            VideoMem[(y - 1) * 80 + x] = VideoMem[y * 80 + x];
-        }
-    }
+uint8_t buffer[512];
 
-    // Очистити останній рядок
-    for (int x = 0; x < 80; x++) {
-        VideoMem[(24 - 1) * 80 + x] = ' ' | (0x07 << 8);
-    }
-}
+char path[32][13] = { NULL };
+int path_counter = 0;
 
-
-void printf(char* str, int color){
-	static uint16_t* VideoMem = (uint16_t*)0xb8000;
-	for(int i = 0; str[i] != '\0'; ++i){
-		switch(str[i]){
-			case '\n':
-			x = 0;
-			y++;
-			update_cursor();
-			break;
-		default:
-			VideoMem[80*y+x] = (VideoMem[80*y+x] & color) | str[i];
-			x++;
-			update_cursor();
-			break;
-		}
-
-		if( x>=80){
-			y++;
-			x = 0;
-			update_cursor();
-		}
-
-		if(y >= 24)
-        {
-        	y--;
-        	scroll_screen();
-			update_cursor();
-        }
-	}
-}
-
-void print_char(char c, int color){
-	static uint16_t* VideoMem = (uint16_t*)0xb8000;
-
-	if(c=='\n'){
-		x = 0;
-		y++;
-		update_cursor();
-	}else{
-		VideoMem[80*y+x] = (VideoMem[80*y+x] & color) | c;
-		x++;
-		update_cursor();
-	}
-	if( x>=80){
-			y++;
-			x = 0;
-			update_cursor();
-		}
-
-	if(y >= 24){
-		y--;
-        scroll_screen();
-		update_cursor();
-    }
-}
-
-void cls(){
-	char *vidmem = (char *) 0xb8000;
-	unsigned int i=0;
-	while(i < (80*25*2)){
-		vidmem[i]=' ';
-		i++;
-		vidmem[i]=0x07;
-		i++;
-	};
-	x = 0;
-	y = 0;
-};
-
-void update_cursor(){
-	uint16_t pos = y * 80 + x;
- 
-	outb(0x3D4, 0x0F);
-	outb(0x3D5, (uint8_t) (pos & 0xFF));
-	outb(0x3D4, 0x0E);
-	outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
-}
 
 
 void kMain(){
 	cls();
-	printf("Inititializing Descriptor tables : ", 0xddd);
+
+	printf("\nKERNEL INIT START:\n", YELLOW);
+
+	printf("\n\nSTAGE 1", YELLOW);
+	printf("\n\nInititializing Descriptor tables : ", LIGHTGREY);
 	init_descriptor_tables();
 	__asm__ volatile ("sti");
-	printf("Done!\n", 0xaaa);
+	printf("DONE", GREEN);
 
-	// Allow IRQs
-
-	printf("Inititializing Drivers : ", 0xddd);
+	printf("\nInititializing keyboard : ", LIGHTGREY);
 	kb_init();
-	printf("Done!\n", 0xaaa);
-
-	printf("Inititializing Terminal : ", 0xddd);
-	clear_buffer();
-	printf("Done!\n", 0xaaa);
-
-	//char* path = "/root/";
-	//char* usr = "admin";
+	printf("DONE", GREEN);
+	printf("\nInititializing timer : ", LIGHTGREY);
+	init_timer(1000);
+	printf("DONE", GREEN);
+	printf("\nInititializing Floppy Disk Controller : ", LIGHTGREY);
+	fdc_init();
+	printf("DONE", GREEN);
+	printf("\nFloppy Disk Controller Reset : ", LIGHTGREY);
+	floppy_reset();
+	printf("DONE", GREEN);
+	printf("\nFloppy Disk Controller Calibrate : ", LIGHTGREY);
+	floppy_calibrate();
+	printf("DONE", GREEN);
+	printf("\nInititializing Terminal : ", LIGHTGREY);
+	//clear_buffer();
+	printf("DONE", GREEN);
 
 	cls();
 
-	//printf("                             \n _____        _____   _____  \n(_____)      (_____) (_____) \n(_)__(__   _(_)   (_(_)___   \n(_____(_) (_(_)   (_) (___)_ \n(_)   (_)_(_(_)___(_) ____(_)\n(_)    (____)(_____) (_____) \n        __(_)                \n       (___)                 \n", 0x999);
-	//printf(" ,_     _\n |\\_,-~/\n / _  _ |    ,--.\n(  @  @ )   / ,-'\n \\  _T_/-._( (\n /         `. \\n|         _  \\ |\n \\ \\ ,  /      |\n  || |-_\\__   /\n ((_/`(____,-'\n", 0xaaa);
-	
-	printf("\n  /\\       /\\\n /  \"\"\"\"\"/  \\\n|  \\/\\\"\"\"/\\/  |\n`, \"/ ,`\n====== Y ======\n  \\   -^-   /\n   \\       / \\__,\n  /  `````       \\______,\n |    ```         \" \" \"  \\,\n |     `           \" \"     \\\n |            |     \"    \"  \\\n |    _      /            \"  |\n | \" / \\ \"  /              \" |\n |   | |   |\\__ _______\\    \"|\n/ -  | | -  \\ /   \"   \"   \" /\n\\___/   \\___/ \\____________/   ", 0xaaa);
+	printf("\n\nSTAGE 2", YELLOW);
 
-	printf("\n", 0xaa);
+	detect_floppy_drives();
+	
+	cls();
+
+	printf("\n\nSTAGE 3", YELLOW);
+
+	printf("\n\nInititializing File System : ", LIGHTGREY);
+
+	init_devices();
+
+	if(flp_a){
+		mount_device("flp0", floppy_open_file, floppy_close_file, floppy_write_file, floppy_list, floppy_load_dir, floppy_create_entry, floppy_remove_entry, file_buf, file_size);
+		fat12_parse_boot_sector(0);
+		fat12_load_root_dir(0);
+		fat12_load_fat(0);
+	}
+
+	if(flp_b){
+		mount_device("flp1", floppy_open_file, floppy_close_file, floppy_write_file, floppy_list, floppy_load_dir, floppy_create_entry, floppy_remove_entry, file_buf, file_size);
+		fat12_parse_boot_sector(1);
+		fat12_load_root_dir(1);	
+		fat12_load_fat(1);
+	}
+
+	cls();
+
+	printf("\n  /\\       /\\\n /  \"\"\"\"\"/  \\\n|  \\/\\\"\"\"/\\/  |\n`, \"/ ,`\n====== Y ======\n  \\   -^-   /\n   \\       / \\__,\n  /  `````       \\______,\n |    ```         \" \" \"  \\,\n |     `           \" \"     \\\n |            |     \"    \"  \\\n |    _      /            \"  |\n | \" / \\ \"  /              \" |\n |   | |   |\\__ _______\\    \"|\n/ -  | | -  \\ /   \"   \"   \" /\n\\___/   \\___/ \\____________/   ", GREEN);
+
+	printf("\n\nType \"help\" to see list of commands", WHITE);
+	
+	printf("\n", 0);
 
 	while(1){
-		read_command(scanf("\nkernel1:/ >>> "));
+		read_command();
 	}
 	
 }

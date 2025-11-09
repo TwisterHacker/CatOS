@@ -1,10 +1,6 @@
-// common.h -- Defines typedefs and some global functions
-
 #ifndef COMMON_H_
 #define COMMON_H_
 
-// Некоторые определения, чтобы стандартизировать типы
-// Эти типы определены для платформы x86
 #ifdef __i386__
 typedef unsigned int	u32int;
 typedef          int	s32int;
@@ -31,22 +27,26 @@ typedef uint32_t size_t;
 #error "Types for non-x86 not implemented."
 #endif
 
-#define BLACK 0x000
-#define BLUE 0x111
-#define GREEN 0x222
-#define CYAN 0x333
-#define RED 0x444
-#define MAGENTA 0x555
-#define BROWN 0x666
-#define LIGHTGREY 0x777
-#define GREY 0x888
-#define LIGHTBLUE 0x999
-#define LIGHTGREEN 0xAAA
-#define LIGHTCYAN 0xBBB
-#define LIGHTRED 0xCCC
-#define LIGHTMAGENTA 0xDDD
-#define YELLOW 0xEEE
-#define WHITE 0xFFF
+#define BLACK 0x00
+#define BLUE 0x01
+#define GREEN 0x02
+#define CYAN 0x03
+#define RED 0x04
+#define MAGENTA 0x05
+#define BROWN 0x06
+#define LIGHTGREY 0x07
+#define GREY 0x08
+#define LIGHTBLUE 0x09
+#define LIGHTGREEN 0x0A
+#define LIGHTCYAN 0x0B
+#define LIGHTRED 0x0C
+#define LIGHTMAGENTA 0x0D
+#define YELLOW 0x0E
+#define WHITE 0x0F
+
+#define NULL 0
+
+#define OS_VER "0.0.2-FAT"
 
 
 
@@ -60,14 +60,19 @@ extern void memcpy(void *dest, const void *src, u32int len);
 
 extern void memset(void *dest, u8int val, u32int len);
 
-extern int strcmp(const char *str1, const char *str2);
+extern int strcmp(const char* s1, const char* s2);
 
-extern short strncmp(char *str1, char *str2, uint8_t n);
+extern short strncmp(const char *str1, const char *str2, uint8_t n);
 
 extern char *strcpy(char *dest, const char *src);
 
 extern char *strcat(char *dest, const char *src);
 
+extern void itoa(unsigned int value, char* str, int base);
+
+extern void tolower(char* str);
+
+extern int strlen(char* str);
 
 #endif
 

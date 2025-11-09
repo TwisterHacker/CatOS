@@ -1,60 +1,26 @@
 #include <drivers/keyboard.h>
 #include <common.h>
 #include <interrupts/isr.h>
-
-void printf(); 
-void print_char(); 
-void update_cursor();
+#include <drivers/terminal.h>
 
 volatile unsigned char ScanCode;
 
+extern short in_scanf;
+
 extern u8int char_counter;
 extern char buffer[128];
-extern short in_scanf;
-extern void read_command(char* command);
-extern void update_cursor();
-extern int x;
-extern int y;
-
-
-void clear_buffer(){
-    for(short a=0; a<128; a++)
-        buffer[a] = 0;
-    char_counter = 0;
-}
 
 void OnKeyDown(char key){
-    print_char(key, 0xfff);
-    if(in_scanf != 0){
+    print_char(key, WHITE);
+    if(in_scanf != 0 && key != '\n'){
         buffer[char_counter] = key;
         char_counter++;
     }
 }
 
-void BackSpaceDown(){
-    char *VideoMem = (char *) 0xb8000;
-    if(in_scanf != 0 && char_counter != 0){
-        buffer[char_counter-1] = 0;
-        char_counter--;
-        if(x==0){
-            y--;
-            x = 79;
-        }
-        else{
-            x--;
-        }
-        VideoMem[(80*y+x)*2] = ' ';
-        VideoMem[(80*y+x)*2+1] = 0x07;
-        update_cursor();
-    }
-}
-
-//char* scanf(){}
-
 void kb_handler(){
-
     outb(0x20, 0x20);   // Send EOI
-    ScanCode = inw(0x60);    
+    ScanCode = inb(0x60);    
     if((ScanCode & 128) == 128)
 		return;
     else{
@@ -75,7 +41,7 @@ void kb_handler(){
             case 0x12: OnKeyDown('e'); break;
             case 0x13: OnKeyDown('r'); break;
             case 0x14: OnKeyDown('t'); break;
-            case 0x15: OnKeyDown('z'); break;
+            case 0x15: OnKeyDown('y'); break;
             case 0x16: OnKeyDown('u'); break;
             case 0x17: OnKeyDown('i'); break;
             case 0x18: OnKeyDown('o'); break;
@@ -91,7 +57,7 @@ void kb_handler(){
             case 0x25: OnKeyDown('k'); break;
             case 0x26: OnKeyDown('l'); break;
 
-            case 0x2C: OnKeyDown('y'); break;
+            case 0x2C: OnKeyDown('z'); break;
             case 0x2D: OnKeyDown('x'); break;
             case 0x2E: OnKeyDown('c'); break;
             case 0x2F: OnKeyDown('v'); break;
@@ -100,7 +66,7 @@ void kb_handler(){
             case 0x32: OnKeyDown('m'); break;
             case 0x33: OnKeyDown(','); break;
             case 0x34: OnKeyDown('.'); break;
-            case 0x35: OnKeyDown('-'); break;
+            case 0x35: OnKeyDown('/'); break;
 
             case 0x39: OnKeyDown(' '); break;
 
@@ -117,6 +83,7 @@ void kb_handler(){
     			//printf("undefined key!", 0xaaa);
     	}
     }
+
 }
 
 void kb_init(){
