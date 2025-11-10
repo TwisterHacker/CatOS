@@ -3,4 +3,4 @@
 ### The new version added:
 > - Virtual File System
 > - Floppy Disk Support
-> - FAT12 Support
+> - FAT12 Support (only for reading)
