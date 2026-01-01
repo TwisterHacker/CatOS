@@ -1,13 +1,18 @@
 	OBJECTS = obj/loader.o 						 \
 			  obj/main.o 						 \
-			  obj/memory/malloc.o 						 \
+			  obj/memory/memory_managment.o 	 \
 			  obj/common/common.o				 \
 			  obj/interrupts/descriptor_tables.o \
-			  obj/interrupts/interrupts.o \
-			  obj/interrupts/descriptors.o \
-			  obj/interrupts/isr.o \
-			  obj/drivers/keyboard.o \
-			  obj/drivers/terminal.o \
+			  obj/interrupts/interrupts.o        \
+			  obj/interrupts/descriptors.o       \
+			  obj/interrupts/isr.o               \
+			  obj/drivers/keyboard.o             \
+			  obj/drivers/timer.o                \
+			  obj/drivers/terminal.o             \
+			  obj/drivers/shell.o                \
+			  obj/drivers/floppy_disk_controller_driver.o \
+			  obj/fs/fat12.o                     \
+			  obj/drivers/fs.o                   \
 
 	#as objects
 
@@ -62,4 +67,7 @@ kernel.iso: $(OBJECTS)
 
 	rm -rf obj
 
-	'/mnt/d/Program Files/qemu/qemu-system-i386.exe' -cdrom CatOS.iso -soundhw pcspk -vga std
+	#'/mnt/d/Program Files/qemu/qemu-system-i386.exe' -soundhw pcspk -vga std -fda floppy.img -fdb floppy1.img -kernel kernel.elf -boot d
+
+	'/mnt/d/Program Files/qemu/qemu-system-i386.exe' -soundhw pcspk -vga std -fda floppy11.img -cdrom CatOS.iso -boot d
+

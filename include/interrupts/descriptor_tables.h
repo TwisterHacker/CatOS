@@ -1,42 +1,39 @@
-// descriptor_tables.h 
-
 #include <common.h>
 
-// Инициализирующая функция
 extern void init_descriptor_tables();
 
-// Эта структура содержит значения для одной записи GDT
+
 struct gdt_entry_struct {
-	u16int limit_low;	// Младшие 16 бит смещения
-	u16int base_low;	// Младшие 16 бит базы
-	u8int  base_middle;	// Следующие восемь бит базы
-	u8int  access;		// Флаг определяет уровень доступа
+	u16int limit_low;	
+	u16int base_low;	
+	u8int  base_middle;	
+	u8int  access;		
 	u8int  granularity;
-	u8int  base_high;	// старшие 8 бит базы
+	u8int  base_high;	
 } __attribute__((packed));
 
 typedef struct gdt_entry_struct gdt_entry_t;
 
 struct gdt_ptr_struct {
-	u16int limit;	// старшие 16 бит смещения селектора
-	u32int base;	// адрес первой структуры gdt_entry_t
+	u16int limit;	
+	u32int base;	
 } __attribute__((packed));
 
 typedef struct gdt_ptr_struct gdt_ptr_t;
 
-// Структура описывает запись в IDT
+
 struct idt_entry_struct {
-	u16int base_lo;		// Первые 16 бит адреса начала обработчика прерывания
-	u16int sel;			// Селектор сегмента ядра
-	u8int  always0;		// Всегда должно быть равно нулю
-	u8int  flags;		// Флаги. RTFM.
-	u16int base_hi;		// Старшие 16 бит адреса начала обработчика прерывания
+	u16int base_lo;		
+	u16int sel;			
+	u8int  always0;		
+	u8int  flags;		
+	u16int base_hi;		
 }__attribute__((packed));
 
 typedef struct idt_entry_struct idt_entry_t;
 
-// Структура описывает указатель на массив обработчиков прерываний
-// в формате пригодном для загрузки в специальный регистр
+
+
 struct idt_ptr_struct {
 	u16int limit;
 	u32int base;
@@ -44,8 +41,8 @@ struct idt_ptr_struct {
 
 typedef struct idt_ptr_struct idt_ptr_t;
 
-// Следующие директивы позволят нам обращаться к адресам обработчиков
-// описанных в ASM файле
+
+
 extern void isr0 ();
 extern void isr1 ();
 extern void isr2 ();

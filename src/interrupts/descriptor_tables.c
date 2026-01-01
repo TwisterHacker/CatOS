@@ -1,18 +1,11 @@
-// 
-// descriptor_tables.c -- Инициализирует GDT и IDT и определяет
-// дефолтные обработчики аппаратных прерываний
-//
-
 #include <common.h>
 #include <interrupts/descriptor_tables.h>
 
-// Сделаем доступными наши функции из кода на ассемблере
 extern void gdt_flush(u32int);
 
 static void init_gdt();
 static void gdt_set_gate(s32int,u32int,u32int,u8int,u8int);
 
-// Сделаем доступной функцию из кода на ассемблере
 extern void idt_flush(u32int);
 
 static void init_idt();
@@ -25,9 +18,7 @@ idt_ptr_t	idt_ptr;
 
 void init_descriptor_tables()
 {
-	// Инициализируем таблицу GDT
 	init_gdt();
-	// и таблицу IDT
 	init_idt();
 }
 

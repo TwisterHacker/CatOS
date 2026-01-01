@@ -3,7 +3,8 @@
 
 #include "common.h"
 
-void init_timer(uint32_t frequency);
-void sleep(uint32_t seconds);
+extern void init_timer(uint32_t frequency);
+extern void sleep(uint32_t seconds);
+extern void msleep(uint32_t milliseconds);
 
 #endif

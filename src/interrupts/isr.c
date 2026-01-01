@@ -1,7 +1,3 @@
-// 
-// isr.c -- Высокоуровневый обработчик прерываний
-//
-
 #include <common.h>
 #include <interrupts/isr.h>
 
@@ -11,7 +7,7 @@ void printf(char* str, int color);
 // Данная функция вызывается из нашего обработчика из файла interrupt.h
 void isr_handler(registers_t regs)
 {
-	printf("recieved interrupt!\n ", 0xBBB);
+	//printf("recieved interrupt!\n ", 0xBBB);
 
 	if(interrupt_handlers[regs.int_no] != 0)
 	{
